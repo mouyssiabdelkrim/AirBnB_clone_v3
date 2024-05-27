@@ -1,20 +1,28 @@
-import os
+#!/usr/bin/python3
+"""
+Testing app.py file
+"""
 from api.v1.app import app
-from api.v1.views import *
-import unittest
-import tempfile
 import flask
+import json
+from models import storage
+import unittest
 
 
-class AppTestCase(unittest.TestCase):
-    '''test app.py'''
+class TestApp(unittest.TestCase):
 
-    def test_create_app(self):
-        '''check app instance with blueprint is created'''
-        with app.test_client() as c:
-            self.assertIsInstance(c, flask.testing.FlaskClient)
+    @classmethod
+    def setUpClass(self):
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def test_404(self):
+        rv = self.app.get('/bad')
+        self.assertEqual(rv.status_code, 404)
+        self.assertEqual(rv.headers.get("Content-Type"), "application/json")
+        json_format = json.loads(str(rv.get_data(), encoding="utf-8"))
+        self.assertEqual(json_format.get("error"), "Not found")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
